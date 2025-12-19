@@ -228,7 +228,7 @@ For problems or questions:
 
 ## Acknowledgments
 
-- [Parakeet-MLX](https://github.com/mlx-community/parakeet) for the transcription engine
+- [NVIDIA Parakeet TDT 0.6B V2](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v2) - Base transcription model by NVIDIA
 - [FastAPI](https://fastapi.tiangolo.com/) for the web framework
 - [Uvicorn](https://www.uvicorn.org/) for the ASGI server
 
