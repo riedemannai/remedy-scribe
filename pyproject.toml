@@ -1,0 +1,29 @@
+[project]
+name = "remedy-scribe"
+version = "1.0.0"
+description = "Medizinische Spracherkennung für klinische Dokumentation"
+readme = "README_REMEDY_SCRIBE.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+]
+
+[tool.uv]
+# Keine dev-dependencies mehr (verwende project.optional-dependencies.dev stattdessen)
+
+[tool.black]
+line-length = 100
+target-version = ['py310']
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+

@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+server.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Model files (zu groß für Git)
+*.safetensors
+*.bin
+*.pt
+*.pth
+
+# Data directories
+data/
+*.wav
+*.mp3
+*.flac

@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RemedyScribe – Medizinische Spracherkennung</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0f1a;
+            --bg-secondary: #111827;
+            --bg-card: #1a2234;
+            --bg-elevated: #242f45;
+            --accent-primary: #00d4aa;
+            --accent-secondary: #00b894;
+            --accent-glow: rgba(0, 212, 170, 0.3);
+            --danger: #ff4757;
+            --danger-glow: rgba(255, 71, 87, 0.4);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-subtle: rgba(255, 255, 255, 0.06);
+            --border-light: rgba(255, 255, 255, 0.1);
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Subtle grid background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(0, 212, 170, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 170, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Top gradient accent */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 400px;
+            background: radial-gradient(ellipse 80% 50% at 50% -20%, var(--accent-glow), transparent);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .app {
+            position: relative;
+            z-index: 1;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+
+        .logo-icon {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            box-shadow: 0 8px 32px var(--accent-glow);
+        }
+
+        .logo-text {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-text span {
+            color: var(--accent-primary);
+        }
+
+        .tagline {
+            color: var(--text-secondary);
+            font-size: 15px;
+            font-weight: 400;
+        }
+
+        /* Main Output Section - Gesamttext */
+        .output-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: 28px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .output-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+            opacity: 0.5;
+        }
+
+        .output-text-container {
+            position: relative;
+        }
+
+        .output-text {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 24px;
+            padding-right: 60px;
+            font-size: 17px;
+            line-height: 1.9;
+            color: var(--text-primary);
+            min-height: 140px;
+            transition: all 0.3s ease;
+            white-space: pre-wrap;
+            outline: none;
+        }
+
+        .output-text:empty::before {
+            content: attr(data-placeholder);
+            color: var(--text-muted);
+            font-style: italic;
+            pointer-events: none;
+        }
+
+        .output-text:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .output-text:not(:empty) {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 40px var(--accent-glow);
+        }
+
+        .output-toolbar {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn-icon-only {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-light);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .btn-icon-only:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border-color: var(--text-muted);
+        }
+
+        .btn-icon-only svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Recording Section */
+        .recording-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: 28px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .recording-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+            opacity: 0.5;
+        }
+
+        /* Recording Status Display */
+        .status-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            padding: 20px;
+            margin-bottom: 24px;
+            background: var(--bg-secondary);
+            border-radius: 14px;
+            border: 1px solid var(--border-subtle);
+            min-height: 80px;
+            transition: all 0.4s ease;
+        }
+
+        .status-display.recording {
+            background: linear-gradient(135deg, rgba(255, 71, 87, 0.1), rgba(255, 71, 87, 0.05));
+            border-color: var(--danger);
+            box-shadow: 
+                0 0 60px var(--danger-glow),
+                inset 0 0 60px rgba(255, 71, 87, 0.05);
+        }
+
+        .status-display.processing {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));
+            border-color: var(--warning);
+        }
+
+        .recording-indicator {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .rec-dot {
+            width: 14px;
+            height: 14px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .status-display.recording .rec-dot {
+            background: var(--danger);
+            box-shadow: 0 0 20px var(--danger);
+            animation: recPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes recPulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 0 20px var(--danger);
+            }
+            50% { 
+                transform: scale(1.2);
+                box-shadow: 0 0 30px var(--danger), 0 0 60px var(--danger-glow);
+            }
+        }
+
+        .status-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+        }
+
+        .status-display.recording .status-text {
+            color: var(--danger);
+        }
+
+        .timer {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 2px;
+            transition: color 0.3s ease;
+        }
+
+        .status-display.recording .timer {
+            color: var(--text-primary);
+        }
+
+        /* Audio Visualizer */
+        .visualizer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            height: 32px;
+            opacity: 0.3;
+            transition: opacity 0.3s ease;
+        }
+
+        .status-display.recording .visualizer {
+            opacity: 1;
+        }
+
+        .visualizer-bar {
+            width: 3px;
+            height: 6px;
+            background: var(--text-muted);
+            border-radius: 2px;
+            transition: background 0.3s ease;
+        }
+
+        .status-display.recording .visualizer-bar {
+            background: var(--danger);
+            animation: visualize 0.5s ease-in-out infinite alternate;
+        }
+
+        .visualizer-bar:nth-child(1) { animation-delay: 0s; }
+        .visualizer-bar:nth-child(2) { animation-delay: 0.1s; }
+        .visualizer-bar:nth-child(3) { animation-delay: 0.2s; }
+        .visualizer-bar:nth-child(4) { animation-delay: 0.3s; }
+        .visualizer-bar:nth-child(5) { animation-delay: 0.4s; }
+        .visualizer-bar:nth-child(6) { animation-delay: 0.3s; }
+        .visualizer-bar:nth-child(7) { animation-delay: 0.2s; }
+
+        @keyframes visualize {
+            0% { height: 6px; }
+            100% { height: 28px; }
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 12px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: var(--bg-primary);
+            box-shadow: 0 4px 24px var(--accent-glow);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px var(--accent-glow);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+            box-shadow: 0 4px 24px var(--danger-glow);
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px var(--danger-glow);
+        }
+
+        .btn-danger:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-ghost {
+            background: var(--bg-elevated);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn-ghost:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border-color: var(--text-muted);
+        }
+
+        .btn-icon {
+            font-size: 16px;
+        }
+
+        /* Config Section */
+        .config-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .config-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .config-input {
+            flex: 1;
+            padding: 10px 14px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .config-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        /* Collapsible Transcriptions Section */
+        .history-section {
+            margin-top: 24px;
+        }
+
+        .history-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .history-toggle:hover {
+            background: var(--bg-elevated);
+            border-color: var(--border-light);
+        }
+
+        .history-toggle-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .history-toggle-icon {
+            color: var(--text-muted);
+            font-size: 18px;
+        }
+
+        .history-toggle-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .history-toggle-badge {
+            background: var(--bg-elevated);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent-primary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .history-toggle-arrow {
+            color: var(--text-muted);
+            font-size: 14px;
+            transition: transform 0.3s ease;
+        }
+
+        .history-toggle.expanded .history-toggle-arrow {
+            transform: rotate(180deg);
+        }
+
+        .history-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .history-content.expanded {
+            max-height: 2000px;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-top: 12px;
+        }
+
+        .history-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 16px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .history-item-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .history-item-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .history-item-number {
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .history-item-time {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .history-item-stats {
+            display: flex;
+            gap: 12px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .history-item-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            padding: 14px 24px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .toast.visible {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            border-color: var(--success);
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), var(--bg-elevated));
+        }
+
+        .toast.error {
+            border-color: var(--danger);
+            background: linear-gradient(135deg, rgba(255, 71, 87, 0.1), var(--bg-elevated));
+        }
+
+        .toast-icon {
+            font-size: 18px;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .app {
+                padding: 24px 16px;
+            }
+
+            .output-section,
+            .recording-section {
+                padding: 20px;
+            }
+
+            .status-display {
+                flex-direction: column;
+                gap: 12px;
+                padding: 16px;
+            }
+
+            .timer {
+                font-size: 24px;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .config-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .output-stats {
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+
+            .output-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">⚕</div>
+                <div class="logo-text">Remedy<span>Scribe</span></div>
+            </div>
+            <p class="tagline">Professionelle Spracherkennung für medizinische Dokumentation</p>
+        </header>
+
+        <!-- Main Output Section - Gesamttext (NOW AT TOP) -->
+        <section class="output-section">
+            <div class="output-text-container">
+                <div class="output-text" id="output-text" contenteditable="true" data-placeholder="Starten Sie eine Aufnahme, um die Transkription hier zu sehen."></div>
+                <div class="output-toolbar">
+                    <button class="btn-icon-only" id="copy-btn" title="Kopieren">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                    </button>
+                    <button class="btn-icon-only" id="clear-btn" title="Löschen">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recording Section -->
+        <section class="recording-section">
+            <div class="status-display" id="status-display">
+                <div class="recording-indicator">
+                    <div class="rec-dot"></div>
+                    <span class="status-text" id="status-text">Bereit</span>
+                </div>
+                
+                
+                <div class="timer" id="timer">00:00</div>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-primary" id="toggle-btn">
+                    <span class="btn-icon" id="toggle-icon">🎙</span>
+                    <span id="toggle-text">Aufnahme starten</span>
+                </button>
+            </div>
+
+            <input type="hidden" id="server-url" value="http://localhost:8002">
+        </section>
+
+    </div>
+
+
+    <script>
+        // State
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecording = false;
+        let transcriptionCount = 0;
+        let recordingStartTime = null;
+        let timerInterval = null;
+        let transcriptions = [];
+
+        // DOM Elements
+        const toggleBtn = document.getElementById('toggle-btn');
+        const toggleIcon = document.getElementById('toggle-icon');
+        const toggleText = document.getElementById('toggle-text');
+        const clearBtn = document.getElementById('clear-btn');
+        const copyBtn = document.getElementById('copy-btn');
+        const serverUrlInput = document.getElementById('server-url');
+        const statusDisplay = document.getElementById('status-display');
+        const statusText = document.getElementById('status-text');
+        const timerEl = document.getElementById('timer');
+        const outputText = document.getElementById('output-text');
+
+        // Timer functions
+        function updateTimer() {
+            if (!recordingStartTime) return;
+            const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+            const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+            const seconds = (elapsed % 60).toString().padStart(2, '0');
+            timerEl.textContent = `${minutes}:${seconds}`;
+        }
+
+        function startTimer() {
+            recordingStartTime = Date.now();
+            timerEl.textContent = '00:00';
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            recordingStartTime = null;
+        }
+
+
+
+        // Copy to clipboard
+        async function copyToClipboard() {
+            const text = outputText.textContent.trim();
+            if (!text) return;
+            
+            try {
+                await navigator.clipboard.writeText(text);
+            } catch (error) {
+                console.error('Copy failed:', error);
+            }
+        }
+
+        // Recording functions
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = async () => {
+                    await processRecording();
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                
+                // Update UI
+                statusDisplay.classList.add('recording');
+                statusText.textContent = 'Aufnahme läuft';
+                toggleBtn.classList.remove('btn-primary');
+                toggleBtn.classList.add('btn-danger');
+                toggleIcon.textContent = '⏹';
+                toggleText.textContent = 'Stoppen';
+                startTimer();
+                
+            } catch (error) {
+                console.error('Recording error:', error);
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                isRecording = false;
+                
+                // Update UI
+                statusDisplay.classList.remove('recording');
+                statusDisplay.classList.add('processing');
+                statusText.textContent = 'Verarbeitung...';
+                toggleBtn.disabled = true;
+                stopTimer();
+            }
+        }
+
+        function toggleRecording() {
+            if (isRecording) {
+                stopRecording();
+            } else {
+                startRecording();
+            }
+        }
+
+        async function processRecording() {
+            try {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                const serverUrl = serverUrlInput.value.trim();
+
+                if (!serverUrl) {
+                    resetUI();
+                    return;
+                }
+
+                // Convert to WAV
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const arrayBuffer = await audioBlob.arrayBuffer();
+                const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                const wavBlob = audioBufferToWav(audioBuffer);
+
+                // Send to server
+                const formData = new FormData();
+                formData.append('file', wavBlob, 'recording.wav');
+                formData.append('model', 'parakeet-tdt-0.6b-v3');
+                formData.append('language', 'de');
+                formData.append('response_format', 'json');
+
+                const response = await fetch(`${serverUrl}/v1/audio/transcriptions`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server-Fehler: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const transcription = result.text || '';
+
+                transcriptionCount++;
+                transcriptions.push({
+                    number: transcriptionCount,
+                    text: transcription,
+                    time: new Date().toLocaleTimeString('de-DE')
+                });
+                
+                updateOutputText();
+                
+            } catch (error) {
+                console.error('Processing error:', error);
+            } finally {
+                resetUI();
+            }
+        }
+
+        function resetUI() {
+            statusDisplay.classList.remove('recording', 'processing');
+            statusText.textContent = 'Bereit';
+            toggleBtn.disabled = false;
+            toggleBtn.classList.remove('btn-danger');
+            toggleBtn.classList.add('btn-primary');
+            toggleIcon.textContent = '🎙';
+            toggleText.textContent = 'Aufnahme starten';
+        }
+
+
+        function updateOutputText() {
+            const combined = transcriptions.map(t => t.text.trim()).join(' ');
+
+            if (combined.trim()) {
+                // Append to existing text if user has edited it
+                const currentText = outputText.textContent.trim();
+                if (currentText && !transcriptions.slice(0, -1).map(t => t.text.trim()).join(' ').includes(currentText)) {
+                    // User has edited, append new transcription
+                    outputText.textContent = currentText + ' ' + transcriptions[transcriptions.length - 1].text.trim();
+                } else {
+                    outputText.textContent = combined;
+                }
+            }
+        }
+
+        function clearAll() {
+            outputText.textContent = '';
+            transcriptionCount = 0;
+            transcriptions = [];
+            timerEl.textContent = '00:00';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // WAV conversion
+        function audioBufferToWav(buffer) {
+            const length = buffer.length;
+            const numberOfChannels = buffer.numberOfChannels;
+            const sampleRate = buffer.sampleRate;
+            const bytesPerSample = 2;
+            const blockAlign = numberOfChannels * bytesPerSample;
+            const byteRate = sampleRate * blockAlign;
+            const dataSize = length * blockAlign;
+            const bufferSize = 44 + dataSize;
+
+            const arrayBuffer = new ArrayBuffer(bufferSize);
+            const view = new DataView(arrayBuffer);
+
+            const writeString = (offset, string) => {
+                for (let i = 0; i < string.length; i++) {
+                    view.setUint8(offset + i, string.charCodeAt(i));
+                }
+            };
+
+            writeString(0, 'RIFF');
+            view.setUint32(4, bufferSize - 8, true);
+            writeString(8, 'WAVE');
+            writeString(12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, numberOfChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, byteRate, true);
+            view.setUint16(32, blockAlign, true);
+            view.setUint16(34, 16, true);
+            writeString(36, 'data');
+            view.setUint32(40, dataSize, true);
+
+            let offset = 44;
+            for (let i = 0; i < length; i++) {
+                for (let channel = 0; channel < numberOfChannels; channel++) {
+                    const sample = Math.max(-1, Math.min(1, buffer.getChannelData(channel)[i]));
+                    view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+                    offset += 2;
+                }
+            }
+
+            return new Blob([arrayBuffer], { type: 'audio/wav' });
+        }
+
+        // Event listeners
+        toggleBtn.addEventListener('click', toggleRecording);
+        clearBtn.addEventListener('click', clearAll);
+        copyBtn.addEventListener('click', copyToClipboard);
+
+    </script>
+</body>
+</html>
