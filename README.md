@@ -4,29 +4,29 @@
 
 ![RemedyScribe Logo](favicon.svg)
 
-**Medizinische Spracherkennung für klinische Dokumentation**
+**Medical Speech Recognition for Clinical Documentation**
 
-[Features](#features) • [Installation](#installation) • [Verwendung](#verwendung) • [Technologie](#technologie)
+[Features](#features) • [Installation](#installation) • [Usage](#usage) • [Technology](#technology)
 
 </div>
 
 ---
 
-## Über RemedyScribe
+## About RemedyScribe
 
-RemedyScribe ist eine moderne Web-App für medizinische Spracherkennung, speziell optimiert für die klinische Dokumentation. Die App ermöglicht es medizinischem Personal, Audio-Aufnahmen direkt im Browser zu erstellen und diese automatisch in Text zu transkribieren.
+RemedyScribe is a modern web application for medical speech recognition, specifically optimized for clinical documentation. The app enables medical professionals to create audio recordings directly in the browser and automatically transcribe them into text.
 
 ## Features
 
-- 🎙️ **Audio-Aufnahme direkt im Browser** - Keine zusätzliche Software erforderlich
-- 📝 **Automatische Transkription** - Nutzt Parakeet-MLX für präzise Transkription
-- 💾 **Gesamttext-Anzeige** - Alle Transkriptionen werden zusammengeführt
-- ✏️ **Textbearbeitung** - Direkte Bearbeitung im Browser
-- 📋 **Kopieren-Funktion** - Ein-Klick Kopieren in die Zwischenablage
-- 🗑️ **Löschen-Funktion** - Schnelles Zurücksetzen
-- ⏱️ **Aufnahme-Timer** - Zeigt die Aufnahmezeit an
-- 🎨 **Moderne UI** - Benutzerfreundliche, professionelle Oberfläche
-- 🏥 **Medizinisches Design** - Optimiert für klinische Umgebungen
+- 🎙️ **Direct Browser Audio Recording** - No additional software required
+- 📝 **Automatic Transcription** - Uses Parakeet-MLX for precise transcription
+- 💾 **Combined Text Display** - All transcriptions are merged together
+- ✏️ **Text Editing** - Direct editing in the browser
+- 📋 **Copy Function** - One-click copy to clipboard
+- 🗑️ **Delete Function** - Quick reset
+- ⏱️ **Recording Timer** - Shows recording duration
+- 🎨 **Modern UI** - User-friendly, professional interface
+- 🏥 **Medical Design** - Optimized for clinical environments
 
 ## Screenshots
 
@@ -34,62 +34,63 @@ RemedyScribe ist eine moderne Web-App für medizinische Spracherkennung, speziel
 
 ## Installation
 
-### Voraussetzungen
+### Prerequisites
 
-- Python 3.10 oder höher
-- UV (Python Package Manager) - optional, aber empfohlen
-- Ein laufender Transkriptions-Server (z.B. [Parakeet-MLX Server](https://github.com/mlx-community/parakeet))
+- Python 3.10 or higher
+- UV (Python Package Manager) - optional, but recommended
+- A running transcription server (e.g., [Parakeet-MLX Server](https://github.com/riedemannai/parakeet-mlx-server))
 
-### Schnellstart
+### Quick Start
 
 ```bash
-# 1. Repository klonen
-git clone https://github.com/USERNAME/remedy-scribe.git
+# 1. Clone repository
+git clone git@github.com:riedemannai/remedy-scribe.git
 cd remedy-scribe
 
-# 2. Abhängigkeiten installieren
+# 2. Install dependencies
 pip install -r requirements_remedy_scribe.txt
 
-# 3. Web-App starten
+# 3. Start web app
 ./start_remedy_scribe_simple.sh
 ```
 
-### Mit UV (empfohlen)
+### With UV (recommended)
 
 ```bash
-# 1. Repository klonen
-git clone https://github.com/USERNAME/remedy-scribe.git
+# 1. Clone repository
+git clone git@github.com:riedemannai/remedy-scribe.git
 cd remedy-scribe
 
-# 2. Mit UV installieren und starten
+# 2. Install and start with UV
 uv pip install fastapi "uvicorn[standard]"
 uv run --no-project python remedy_scribe_webapp.py
 ```
 
-## Verwendung
+## Usage
 
-### 1. Transkriptions-Server starten
+### 1. Start Transcription Server
 
-Zuerst muss ein Transkriptions-Server laufen:
+First, a transcription server must be running:
 
 ```bash
-# Beispiel: Parakeet-MLX Server
-python parakeet_server.py --port 8002
+# Example: Parakeet-MLX Server
+cd ../parakeet-mlx-server
+./start_server.sh
 ```
 
-### 2. RemedyScribe Web-App starten
+### 2. Start RemedyScribe Web App
 
 ```bash
-# Einfachste Methode
+# Simplest method
 ./start_remedy_scribe_simple.sh
 
-# Oder direkt
+# Or directly
 python remedy_scribe_webapp.py
 ```
 
-### 3. Browser öffnen
+### 3. Open Browser
 
-Öffnen Sie Ihren Browser und navigieren Sie zu:
+Open your browser and navigate to:
 
 ```
 http://localhost:8003
@@ -97,59 +98,59 @@ http://localhost:8003
 
 ### Workflow
 
-1. **Aufnahme starten**: Klicken Sie auf "Aufnahme starten"
-2. **Sprechen**: Sprechen Sie in das Mikrofon
-3. **Aufnahme stoppen**: Klicken Sie auf "Stoppen"
-4. **Transkription**: Die Aufnahme wird automatisch transkribiert
-5. **Text bearbeiten**: Bearbeiten Sie den Text direkt im Textfeld
-6. **Kopieren**: Verwenden Sie die Kopieren-Schaltfläche
-7. **Löschen**: Setzen Sie alles mit der Löschen-Schaltfläche zurück
+1. **Start Recording**: Click "Aufnahme starten" (Start Recording)
+2. **Speak**: Speak into the microphone
+3. **Stop Recording**: Click "Stoppen" (Stop)
+4. **Transcription**: The recording is automatically transcribed
+5. **Edit Text**: Edit the text directly in the text field
+6. **Copy**: Use the copy button
+7. **Delete**: Reset everything with the delete button
 
-## Technologie
+## Technology
 
 ### Frontend
-- **HTML5** mit modernem CSS
+- **HTML5** with modern CSS
 - **JavaScript** (MediaRecorder API)
-- **Responsive Design** für Desktop und Mobile
+- **Responsive Design** for desktop and mobile
 
 ### Backend
-- **FastAPI** - Moderne Python Web-Framework
-- **Uvicorn** - ASGI Server
+- **FastAPI** - Modern Python web framework
+- **Uvicorn** - ASGI server
 - **Python 3.10+**
 
-### Audio-Verarbeitung
+### Audio Processing
 - **Format**: WAV (16kHz, Mono)
 - **Codec**: Opus (Browser) → WAV (Server)
 
-### Transkriptions-API
-- **Kompatibilität**: OpenAI-kompatible API
+### Transcription API
+- **Compatibility**: OpenAI-compatible API
 - **Endpoint**: `/v1/audio/transcriptions`
-- **Model**: Parakeet-TDT-0.6B-V3 (Standard)
+- **Model**: Parakeet-TDT-0.6B-V3 (default)
 
-## Konfiguration
+## Configuration
 
-### Port ändern
+### Change Port
 
 ```bash
-# Über Umgebungsvariable
+# Via environment variable
 PORT=8080 python remedy_scribe_webapp.py
 
-# Oder in der Kommandozeile
+# Or via command line
 uvicorn remedy_scribe_webapp:app --port 8080
 ```
 
-### Server-URL ändern
+### Change Server URL
 
-Die Server-URL für die Transkription kann in `test_transcription.html` angepasst werden:
+The server URL for transcription can be adjusted in `test_transcription.html`:
 
 ```javascript
 const serverUrlInput = document.getElementById('server-url');
-// Standard: http://localhost:8002
+// Default: http://localhost:8002
 ```
 
-## Entwicklung
+## Development
 
-### Projekt-Struktur
+### Project Structure
 
 ```
 remedy-scribe/
@@ -157,79 +158,79 @@ remedy-scribe/
 ├── test_transcription.html     # Frontend HTML
 ├── favicon.svg                 # SVG Favicon
 ├── favicon.png                 # PNG Favicon
-├── start_remedy_scribe_simple.sh  # Start-Skript
-├── requirements_remedy_scribe.txt # Python Abhängigkeiten
-├── pyproject.toml              # UV Konfiguration
-└── README.md                   # Diese Datei
+├── start_remedy_scribe_simple.sh  # Start script
+├── requirements_remedy_scribe.txt # Python dependencies
+├── pyproject.toml              # UV configuration
+└── README.md                   # This file
 ```
 
-### Lokale Entwicklung
+### Local Development
 
 ```bash
-# Mit Hot-Reload
+# With hot-reload
 uvicorn remedy_scribe_webapp:app --reload
 
-# Mit UV
+# With UV
 uv run uvicorn remedy_scribe_webapp:app --reload
 ```
 
-### Code-Formatierung
+### Code Formatting
 
 ```bash
-# Mit ruff
+# With ruff
 ruff check remedy_scribe_webapp.py
 
-# Mit black
+# With black
 black remedy_scribe_webapp.py
 ```
 
-## Fehlerbehebung
+## Troubleshooting
 
-### Server nicht erreichbar
+### Server Not Reachable
 
-Stellen Sie sicher, dass der Transkriptions-Server läuft:
+Make sure the transcription server is running:
 
 ```bash
 curl http://localhost:8002/health
 ```
 
-### Mikrofon-Berechtigung
+### Microphone Permission
 
-Der Browser benötigt Berechtigung für den Mikrofonzugriff. Stellen Sie sicher, dass Sie die Berechtigung erteilt haben.
+The browser requires permission for microphone access. Make sure you have granted permission.
 
-### Port bereits belegt
+### Port Already in Use
 
-Die App sucht automatisch nach einem freien Port, wenn der Standard-Port (8003) belegt ist.
+The app automatically searches for a free port if the default port (8003) is in use.
 
-### CORS-Fehler
+### CORS Errors
 
-Die Web-App hat CORS aktiviert. Falls Probleme auftreten, überprüfen Sie die CORS-Einstellungen im Transkriptions-Server.
+The web app has CORS enabled. If problems occur, check the CORS settings in the transcription server.
 
-## Lizenz
+## License
 
-[Lizenz hier einfügen - z.B. MIT, Apache 2.0, etc.]
+MIT License - see [LICENSE](LICENSE) file
 
-## Beitragen
+## Contributing
 
-Beiträge sind willkommen! Bitte:
+Contributions are welcome! Please:
 
-1. Forken Sie das Repository
-2. Erstellen Sie einen Feature-Branch (`git checkout -b feature/AmazingFeature`)
-3. Committen Sie Ihre Änderungen (`git commit -m 'Add some AmazingFeature'`)
-4. Pushen Sie zum Branch (`git push origin feature/AmazingFeature`)
-5. Öffnen Sie einen Pull Request
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## Support
 
-Bei Problemen oder Fragen:
-- Öffnen Sie ein [Issue](https://github.com/USERNAME/remedy-scribe/issues)
-- Kontaktieren Sie die Maintainer
+For problems or questions:
+- Open an [Issue](https://github.com/riedemannai/remedy-scribe/issues)
+- Contact the maintainers
 
-## Danksagungen
+## Acknowledgments
 
-- [Parakeet-MLX](https://github.com/mlx-community/parakeet) für die Transkriptions-Engine
-- [FastAPI](https://fastapi.tiangolo.com/) für das Web-Framework
-- [Uvicorn](https://www.uvicorn.org/) für den ASGI Server
+- [Parakeet-MLX](https://github.com/mlx-community/parakeet) for the transcription engine
+- [FastAPI](https://fastapi.tiangolo.com/) for the web framework
+- [Uvicorn](https://www.uvicorn.org/) for the ASGI server
 
 ---
 
@@ -237,7 +238,6 @@ Bei Problemen oder Fragen:
 
 **Made with ❤️ for medical professionals**
 
-[⭐ Star auf GitHub](https://github.com/USERNAME/remedy-scribe) • [📖 Dokumentation](#) • [🐛 Issues](https://github.com/USERNAME/remedy-scribe/issues)
+[⭐ Star on GitHub](https://github.com/riedemannai/remedy-scribe) • [📖 Documentation](#) • [🐛 Issues](https://github.com/riedemannai/remedy-scribe/issues)
 
 </div>
-
