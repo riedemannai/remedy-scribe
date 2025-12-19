@@ -105,18 +105,27 @@ if __name__ == "__main__":
             except OSError:
                 return False
     
-    # Try to find an available port if default is taken
+    # Check if the specified port is available
+    # Only use alternative port if PORT was not explicitly set (using default)
+    port_explicitly_set = "PORT" in os.environ
     original_port = port
+    
     if not is_port_available(port, host):
-        logger.warning(f"Port {port} is already in use, trying alternative ports...")
-        for alt_port in range(port + 1, port + 10):
-            if is_port_available(alt_port, host):
-                port = alt_port
-                logger.info(f"Using alternative port: {port}")
-                break
-        else:
-            logger.error(f"Could not find an available port. Please free up port {original_port} or specify a different PORT.")
+        if port_explicitly_set:
+            # If PORT was explicitly set, fail instead of using alternative
+            logger.error(f"Port {port} is already in use. Please free up port {port} or specify a different PORT.")
             exit(1)
+        else:
+            # Only use alternative if using default port
+            logger.warning(f"Port {port} is already in use, trying alternative ports...")
+            for alt_port in range(port + 1, port + 10):
+                if is_port_available(alt_port, host):
+                    port = alt_port
+                    logger.info(f"Using alternative port: {port}")
+                    break
+            else:
+                logger.error(f"Could not find an available port. Please free up port {original_port} or specify a different PORT.")
+                exit(1)
     
     logger.info(f"Starting Remedy Scribe Web-App on {host}:{port}")
     logger.info(f"Open your browser at http://localhost:{port}")
