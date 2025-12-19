@@ -3,6 +3,28 @@
 
 set -e
 
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -p|--port)
+            PORT="$2"
+            export PORT
+            shift 2
+            ;;
+        -h|--host)
+            HOST="$2"
+            export HOST
+            shift 2
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Usage: $0 [-p|--port PORT] [-h|--host HOST]"
+            exit 1
+            ;;
+    esac
+done
+
+# Set defaults if not provided
 PORT=${PORT:-8003}
 HOST=${HOST:-0.0.0.0}
 
